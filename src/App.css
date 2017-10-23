@@ -141,9 +141,11 @@ body, .app {
 }
 
 .book-shelf-changer {
-  position: absolute;
+  display: block;
+  position: relative;
   right: 0;
-  bottom: -10px;
+    left: 100px;
+  bottom: -150px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
