@@ -4,23 +4,25 @@ import PropTypes from 'prop-types'
 
 import BookShelf from './BookShelf.js'
 import * as BooksAPI from './BooksAPI'
-import escapeRegExp from 'escape-string-regexp'
+
 import sortBy from 'sort-by'
+
+import { Debounce } from 'react-throttle'
 
 
 /** @constructor Search books arcording to the specied query and add selected books to specified shelf
  */
 class SearchBooks extends Component {
- 
+
   statics:  {
        MAX_RESULTS: 20
-   } 
+   }
   static propTypes = {
     shelfName: PropTypes.string.isRequired,
     books: PropTypes.array.isRequired,
     onShelfChanged: PropTypes.func.isRequired
   }
-   
+
    constructor(props){
         super(props)
 
@@ -28,38 +30,54 @@ class SearchBooks extends Component {
             query: '',
             booksAvaialble: props.books
         }
-
     }
 
-  
+
     /**
      * update the query
      */
     updateQuery = (query) => {
-        
-         this.setState({ 
+
+         this.setState({
             query: query
         })
-        console.log(JSON.stringify(query.trim()));
+
         const searchQuery = this.state.query
         const maxResults = 20
         BooksAPI.search(searchQuery,maxResults).then((books) => {
             if (typeof books !== 'undefined' && books.length > 0) {
                  if(books.length > 0 ){
-                    this.setState({ 
-                        booksAvaialble: books
-                    }) 
+                   console.log(" available = " + this.state.booksAvaialble.length)
+                      console.log(" from server = " + books.length)
+                    this.setState({
+                        booksAvaialble: this.state.booksAvaialble.concat(
+                          books.filter((bookFromServer)=>{
+                            if(bookFromServer!== undefined)
+                            {
+                              const theBookFound = this.state.booksAvaialble.find((userBook)=>{
+                                      return userBook.id === bookFromServer.id
+                                      })
+                              return theBookFound === undefined;
+                            }
+                            else{
+                              return false;
+                            }
+
+                          })
+                        )
+                    })
                  }
+
+
              }
               else{
-                this.setState({ 
+                this.setState({
                     booksAvaialble: []
-                }) 
-            }   
-           
+                })
+            }
+
         })
-        
-        //console.log(JSON.stringify(this.state.books.length));
+
     }
 
     /**
@@ -68,35 +86,24 @@ class SearchBooks extends Component {
     clearQuery = () => {
         this.setState({ query: '' })
     }
-    
+
     componentDidMount() {
         this.clearQuery();
-       
+
     }
- 
+
     /**
      * @description renders the search books view
      */
     render(){
-        const { books,shelfName} = this.props
-        const queryString = this.state.query
+        const { shelfName} = this.props
         const avaialbleBooks = this.state.booksAvaialble
-        
-//        let showingBooks
-//        if (queryString ) {
-//            let match = new RegExp(escapeRegExp(queryString), 'i')
-//            showingBooks =  avaialbleBooks.filter((abook) => match.test(abook.title) || match.test(abook.authors) )
-//            console.log("from Q");
-//        } else {
-//            showingBooks = this.props.books
-//            console.log("default");
-//        }
-        
+
         avaialbleBooks.sort(sortBy('name'))
-        
+
         return (
         <div className="search-books">
-            <div className="search-books-bar">     
+            <div className="search-books-bar">
             <Link className='close-search' to='/'>Close</Link>
               <div className="search-books-input-wrapper">
                 {/*
@@ -107,10 +114,11 @@ class SearchBooks extends Component {
                   However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
                   you don't find a specific author or title. Every search is limited by search terms.
                 */}
-                <input type="text" placeholder="Search by title or author"
-                    value={queryString}
-                    onChange={(event) => this.updateQuery(event.target.value)}
-                />
+                <Debounce time="400" handler="onChange">
+                  <input type="text" placeholder="Search by title or author"
+                      onChange={(event) => this.updateQuery(event.target.value)}
+                  />
+                </Debounce>
 
               </div>
             </div>
@@ -118,7 +126,7 @@ class SearchBooks extends Component {
               <BookShelf shelfName={shelfName} books={avaialbleBooks} onShelfChanged={this.props.onShelfChanged}/>
             </div>
           </div>
-        
+
         )
     }
 }
