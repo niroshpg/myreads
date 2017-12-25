@@ -3,30 +3,63 @@ import { Link} from 'react-router-dom';
 import PropTypes from 'prop-types'
 
 import BookShelf from './BookShelf.js'
-import BooksAPI from './BooksAPI.js'
+import * as BooksAPI from './BooksAPI'
 import escapeRegExp from 'escape-string-regexp'
 import sortBy from 'sort-by'
+
 
 /** @constructor Search books arcording to the specied query and add selected books to specified shelf
  */
 class SearchBooks extends Component {
+ 
+  statics:  {
+       MAX_RESULTS: 20
+   } 
   static propTypes = {
     shelfName: PropTypes.string.isRequired,
     books: PropTypes.array.isRequired,
     onShelfChanged: PropTypes.func.isRequired
   }
-    /**
-     This state holdthe input query text for filtering availalbe books to display
-    */
-    state = {
-        query: '',
+   
+   constructor(props){
+        super(props)
+
+        this.state = {
+            query: '',
+            booksAvaialble: props.books
+        }
+
     }
-    
+
+  
     /**
      * update the query
      */
     updateQuery = (query) => {
-        this.setState({ query: query.trim() })
+        
+         this.setState({ 
+            query: query
+        })
+        console.log(JSON.stringify(query.trim()));
+        const searchQuery = this.state.query
+        const maxResults = 20
+        BooksAPI.search(searchQuery,maxResults).then((books) => {
+            if (typeof books !== 'undefined' && books.length > 0) {
+                 if(books.length > 0 ){
+                    this.setState({ 
+                        booksAvaialble: books
+                    }) 
+                 }
+             }
+              else{
+                this.setState({ 
+                    booksAvaialble: []
+                }) 
+            }   
+           
+        })
+        
+        //console.log(JSON.stringify(this.state.books.length));
     }
 
     /**
@@ -35,22 +68,31 @@ class SearchBooks extends Component {
     clearQuery = () => {
         this.setState({ query: '' })
     }
+    
+    componentDidMount() {
+        this.clearQuery();
+       
+    }
  
     /**
      * @description renders the search books view
      */
     render(){
         const { books,shelfName} = this.props
-        const { query } = this.state
-        let showingBooks
-        if (query) {
-        const match = new RegExp(escapeRegExp(query), 'i')
-            showingBooks =  books.filter((book) => match.test(book.title) || match.test(book.authors) )
-        } else {
-            showingBooks = books
-        }
+        const queryString = this.state.query
+        const avaialbleBooks = this.state.booksAvaialble
         
-        showingBooks.sort(sortBy('name'))
+//        let showingBooks
+//        if (queryString ) {
+//            let match = new RegExp(escapeRegExp(queryString), 'i')
+//            showingBooks =  avaialbleBooks.filter((abook) => match.test(abook.title) || match.test(abook.authors) )
+//            console.log("from Q");
+//        } else {
+//            showingBooks = this.props.books
+//            console.log("default");
+//        }
+        
+        avaialbleBooks.sort(sortBy('name'))
         
         return (
         <div className="search-books">
@@ -66,17 +108,17 @@ class SearchBooks extends Component {
                   you don't find a specific author or title. Every search is limited by search terms.
                 */}
                 <input type="text" placeholder="Search by title or author"
-                    value={query}
+                    value={queryString}
                     onChange={(event) => this.updateQuery(event.target.value)}
                 />
 
               </div>
             </div>
             <div className="search-books-results">
-              <BookShelf shelfName={shelfName} books={showingBooks
-            } onShelfChanged={this.props.onShelfChanged}/>
+              <BookShelf shelfName={shelfName} books={avaialbleBooks} onShelfChanged={this.props.onShelfChanged}/>
             </div>
           </div>
+        
         )
     }
 }

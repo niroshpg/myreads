@@ -14,15 +14,21 @@ import * as BooksAPI from './BooksAPI'
  *  currently reading a particular books.
  */
 class BooksApp extends React.Component {
-    /**
-     This holds the application state  
-    */
-    state = {
+    
+    constructor(){
+        super()
         /**
-         All books in the shelfs 
+            This holds the application state  
         */
-        books: []
+        this.state = {
+            /**
+             All books in the shelfs 
+            */
+            books: []
+        }
+
     }
+    
 
     /**
     * @description This function will place the selected book in the targeted book shelf
@@ -58,7 +64,7 @@ class BooksApp extends React.Component {
     /**
      * @description renders the application 
      */
-    render(){
+   render(){
         return (
               
             <div>
@@ -66,12 +72,12 @@ class BooksApp extends React.Component {
                     <div className="app">
                         <BookShelf shelfName="Currently Reading" onShelfChanged={this.onShelfChanged.bind(this)} 
                             books={
-                                this.state.books.filter( (book)=> book.shelf.valueOf() == 'currentlyReading')
+                                this.state.books.filter( (book)=> book.shelf.valueOf() === 'currentlyReading')
                             }/>
         
-                        <BookShelf shelfName="Want To Read" onShelfChanged={this.onShelfChanged.bind(this)} books={this.state.books.filter( (book)=> book.shelf.valueOf() == 'wantToRead')}/>
+                        <BookShelf shelfName="Want To Read" onShelfChanged={this.onShelfChanged.bind(this)} books={this.state.books.filter( (book)=> book.shelf.valueOf() === 'wantToRead')}/>
                         
-                        <BookShelf shelfName="Read" onShelfChanged={this.onShelfChanged.bind(this)} books={this.state.books.filter( (book)=>book.shelf.valueOf() == 'read')}/>
+                        <BookShelf shelfName="Read" onShelfChanged={this.onShelfChanged.bind(this)} books={this.state.books.filter( (book)=>book.shelf.valueOf() === 'read')}/>
 
                         <div className="open-search">
                             <Link className='open-search' to='/search'>Add a book</Link>
