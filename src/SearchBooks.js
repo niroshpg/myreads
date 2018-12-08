@@ -44,31 +44,36 @@ class SearchBooks extends Component {
 
         const searchQuery = this.state.query
         const maxResults = 20
+
         BooksAPI.search(searchQuery,maxResults).then((books) => {
+
             if (typeof books !== 'undefined' && books.length > 0) {
                  if(books.length > 0 ){
                    console.log(" available = " + this.state.booksAvaialble.length)
                       console.log(" from server = " + books.length)
-                    this.setState({
-                        booksAvaialble: this.state.booksAvaialble.concat(
-                          books.filter((bookFromServer)=>{
-                            if(bookFromServer!== undefined)
-                            {
-                              const theBookFound = this.state.booksAvaialble.find((userBook)=>{
-                                      return userBook.id === bookFromServer.id
-                                      })
-                              return theBookFound === undefined;
-                            }
-                            else{
-                              return false;
-                            }
+                   let serverAvailableBooks = books.filter((bookFromServer)=>{
+                     if(bookFromServer!== undefined)
+                     {
+                       const theBookFound = this.state.booksAvaialble.find((userBook)=>{
+                               return userBook.id === bookFromServer.id
+                               })
+                       return theBookFound === undefined;
+                     }
+                     else{
+                       return false;
+                     }
 
-                          })
-                        )
-                    })
+                   }).map((book)=>{
+                     book.shelf='none'
+                     return book;
+                   });
+
+                  this.setState({
+                      booksAvaialble: this.state.booksAvaialble.concat(
+                        serverAvailableBooks
+                      )
+                  })
                  }
-
-
              }
               else{
                 this.setState({
@@ -97,9 +102,9 @@ class SearchBooks extends Component {
      */
     render(){
         const { shelfName} = this.props
-        const avaialbleBooks = this.state.booksAvaialble
+        const {booksAvaialble,query} = this.state
 
-        avaialbleBooks.sort(sortBy('name'))
+        booksAvaialble.sort(sortBy('name'))
 
         return (
         <div className="search-books">
@@ -123,7 +128,12 @@ class SearchBooks extends Component {
               </div>
             </div>
             <div className="search-books-results">
-              <BookShelf shelfName={shelfName} books={avaialbleBooks} onShelfChanged={this.props.onShelfChanged}/>
+            {
+              booksAvaialble.length > 0 ?
+              <BookShelf shelfName={shelfName} books={booksAvaialble} onShelfChanged={this.props.onShelfChanged}/>
+              :
+              <p>Books not found</p>
+            }
             </div>
           </div>
 

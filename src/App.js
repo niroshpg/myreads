@@ -61,20 +61,26 @@ class BooksApp extends React.Component {
      * @description renders the application
      */
    render(){
+     const shelves = {
+        currentlyReading: ['Currently Reading', 'currentlyReading'],
+        wantToRead: ['Want to Read', 'wantToRead'],
+        read: ['Read', 'read']
+      }
         return (
 
             <div>
                 <Route exact path='/' render={()=>(
                     <div className="app">
-                        <BookShelf shelfName="Currently Reading" onShelfChanged={this.onShelfChanged.bind(this)}
+                    <div className="list-books-content">
+                      { Object.keys(shelves).map((shelf) =>
+                        <BookShelf shelfName={shelves[shelf][0]}
+                            onShelfChanged={this.onShelfChanged.bind(this)}
                             books={
-                                this.state.books.filter( (book)=> book.shelf.valueOf() === 'currentlyReading')
-                            }/>
-
-                        <BookShelf shelfName="Want To Read" onShelfChanged={this.onShelfChanged.bind(this)} books={this.state.books.filter( (book)=> book.shelf.valueOf() === 'wantToRead')}/>
-
-                        <BookShelf shelfName="Read" onShelfChanged={this.onShelfChanged.bind(this)} books={this.state.books.filter( (book)=>book.shelf.valueOf() === 'read')}/>
-
+                                this.state.books.filter( (book)=> book.shelf.valueOf() === shelves[shelf][1])
+                          }/>
+                      )}
+                    </div>
+                        
                         <div className="open-search">
                             <Link className='open-search' to='/search'>Add a book</Link>
                         </div>
@@ -83,7 +89,9 @@ class BooksApp extends React.Component {
                 }/>
                 <Route exact path='/search' render={()=>(
                     <div className="app">
-                        <SearchBooks shelfName="Available books" books={this.state.books} onShelfChanged={this.onShelfChanged.bind(this)}/>
+                        <SearchBooks shelfName="Available books"
+                          books={this.state.books}
+                          onShelfChanged={this.onShelfChanged.bind(this)}/>
                    </div>
                     )
                 }/>
