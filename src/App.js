@@ -1,12 +1,10 @@
 import React from 'react'
-import { Route ,Link} from 'react-router-dom'
+import { Route, Link } from 'react-router-dom'
 
-import './App.css'
 import BookShelf from './BookShelf.js'
-
 import SearchBooks from './SearchBooks.js'
-
 import * as BooksAPI from './BooksAPI'
+import './App.css'
 
 /** @constructor This is the main class in the Books Application
  *  This application class holds available books loaded from external source
@@ -24,7 +22,8 @@ class BooksApp extends React.Component {
             /**
              All books in the shelfs
             */
-            books: []
+            books: [],
+            refresh: false,
         }
 
     }
@@ -38,9 +37,30 @@ class BooksApp extends React.Component {
     onShelfChanged(shelf,book){
         book.shelf=shelf;
 
-        this.setState((state) => ({
-            books: state.books.concat(book)
-        }))
+        BooksAPI.update(book,shelf);
+
+        let bookFound = this.state.books.find((element)=>{
+          return element.id === book.id
+        })
+        if(bookFound){
+          /**
+            update state to trigger refresh the view for updated shelf
+            for a book already found in a shelf
+          */
+          this.setState((state) => ({
+              refresh: !state.refresh
+          }))
+        }
+        else {
+          /**
+           only add the books not found in exiting boooks
+           to avoid duplication
+          */
+          this.setState((state) => ({
+             books: state.books.concat(book)
+          }))
+        }
+
     }
 
     /**
@@ -54,6 +74,10 @@ class BooksApp extends React.Component {
                 books: allbooks
             }))
         })
+
+    }
+
+    componentDidUpdate(){
 
     }
 
@@ -73,14 +97,14 @@ class BooksApp extends React.Component {
                     <div className="app">
                     <div className="list-books-content">
                       { Object.keys(shelves).map((shelf) =>
-                        <BookShelf shelfName={shelves[shelf][0]}
+                        <BookShelf key={shelves[shelf][0]} shelfName={shelves[shelf][0]}
                             onShelfChanged={this.onShelfChanged.bind(this)}
                             books={
                                 this.state.books.filter( (book)=> book.shelf.valueOf() === shelves[shelf][1])
                           }/>
                       )}
                     </div>
-                        
+
                         <div className="open-search">
                             <Link className='open-search' to='/search'>Add a book</Link>
                         </div>

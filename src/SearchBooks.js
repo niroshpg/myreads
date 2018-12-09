@@ -1,14 +1,11 @@
-import React, {Component} from 'react';
-import { Link} from 'react-router-dom';
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types'
+import { Debounce } from 'react-throttle'
+import sortBy from 'sort-by'
 
 import BookShelf from './BookShelf.js'
 import * as BooksAPI from './BooksAPI'
-
-import sortBy from 'sort-by'
-
-import { Debounce } from 'react-throttle'
-
 
 /** @constructor Search books arcording to the specied query and add selected books to specified shelf
  */
@@ -16,7 +13,8 @@ class SearchBooks extends Component {
 
   statics:  {
        MAX_RESULTS: 20
-   }
+  }
+
   static propTypes = {
     shelfName: PropTypes.string.isRequired,
     books: PropTypes.array.isRequired,
@@ -37,7 +35,6 @@ class SearchBooks extends Component {
      * update the query
      */
     updateQuery = (query) => {
-
          this.setState({
             query: query
         })
@@ -102,7 +99,7 @@ class SearchBooks extends Component {
      */
     render(){
         const { shelfName} = this.props
-        const {booksAvaialble,query} = this.state
+        const {booksAvaialble} = this.state
 
         booksAvaialble.sort(sortBy('name'))
 
